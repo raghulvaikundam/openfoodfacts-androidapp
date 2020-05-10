@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -46,6 +45,7 @@ import openfoodfacts.github.scrachx.openfood.jobs.SavedProductUploadJob;
 import openfoodfacts.github.scrachx.openfood.models.DaoSession;
 import openfoodfacts.github.scrachx.openfood.models.HistoryProduct;
 import openfoodfacts.github.scrachx.openfood.models.HistoryProductDao;
+import openfoodfacts.github.scrachx.openfood.models.OfflineSavedProduct;
 import openfoodfacts.github.scrachx.openfood.models.Product;
 import openfoodfacts.github.scrachx.openfood.models.ProductImageField;
 import openfoodfacts.github.scrachx.openfood.models.ProductIngredient;
@@ -319,14 +319,30 @@ public class OpenFoodAPIClient {
 
     public static void addToHistory(HistoryProductDao mHistoryProductDao, Product product) {
         List<HistoryProduct> historyProducts = mHistoryProductDao.queryBuilder().where(HistoryProductDao.Properties.Barcode.eq(product.getCode())).list();
-        HistoryProduct hp;
-        if (historyProducts.size() == 1) {
-            hp = historyProducts.get(0);
-            hp.setLastSeen(new Date());
-        } else {
-            hp = new HistoryProduct(product.getProductName(), product.getBrands(), product.getImageSmallUrl(LocaleHelper.getLanguage(OFFApplication.getInstance())),
-                product.getCode(), product
-                .getQuantity(), product.getNutritionGradeFr());
+        HistoryProduct hp = new HistoryProduct(product.getProductName(),
+            product.getBrands(),
+            product.getImageSmallUrl(LocaleHelper.getLanguage(OFFApplication.getInstance())),
+            product.getCode(),
+            product.getQuantity(),
+            product.getNutritionGradeFr());
+        if (historyProducts.size() > 0) {
+            hp.setId(historyProducts.get(0).getId());
+        }
+        mHistoryProductDao.insertOrReplace(hp);
+    }
+
+    public static void addToHistory(HistoryProductDao mHistoryProductDao, OfflineSavedProduct offlineSavedProduct) {
+        List<HistoryProduct> historyProducts = mHistoryProductDao.queryBuilder().where(HistoryProductDao.Properties.Barcode.eq(offlineSavedProduct.getBarcode())).list();
+        HashMap<String, String> map = offlineSavedProduct.getProductDetailsMap();
+
+        HistoryProduct hp = new HistoryProduct(offlineSavedProduct.getName(),
+            map.get(OfflineSavedProduct.KEYS.PARAM_BRAND),
+            offlineSavedProduct.getImageFrontLocalUrl(),
+            offlineSavedProduct.getBarcode(),
+            map.get(OfflineSavedProduct.KEYS.PARAM_QUANTITY),
+            null);
+        if (historyProducts.size() > 0) {
+            hp.setId(historyProducts.get(0).getId());
         }
         mHistoryProductDao.insertOrReplace(hp);
     }

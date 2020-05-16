@@ -92,7 +92,7 @@ ext {
     jobDispatcher = '0.8.5'
     fastAdapterCommons = '3.3.1@aar'
     converterScalars = '2.1.0'
-    materialDrawer = '6.1.2'
+    materialDrawer = '8.0.3'
     imageCropper = '2.8.0'
     orchestrator = '1.1.0-alpha4'
     nachos = '1.1.1'
